@@ -10,7 +10,7 @@ import heapq
 from collections import defaultdict
 
 
-# In[82]:
+# In[87]:
 
 
 
@@ -27,6 +27,9 @@ class knn():
     def fit(self,X_train,Y_train):
         self.X_train=X_train
         self.Y_train=Y_train
+        
+    def set_k(self,k):
+        self.k=k
         
     def knn_points(self,newPoint):
         X_train=self.X_train
@@ -51,7 +54,13 @@ class knn():
             if classCount[class_key]>value_max:
                 class_max=class_key
                 value_max=classCount[class_key]
-        return  class_max
+        return class_max
+    
+    def predict_batch(self,batchPoint):
+        return [self.predict(point) for point in batchPoint]
+    
+    def predict_proba_batch(self,batchPoint):
+        return [self.predict_proba(point) for point in batchPoint]
     
     def class_count(self,newPoint):
         knn_result=self.knn_points(newPoint)
@@ -73,7 +82,7 @@ def test_knn():
     x_train=np.array([[1,2,3] for i in range(100000)]) 
     y_train=np.array([i%3for i in range(100000)])
     knn0=knn(x_train,y_train,3)
-    print(knn0.predict(point))
+    print(knn0.predict_proba_batch([point,point]))
 test_knn()
     
 

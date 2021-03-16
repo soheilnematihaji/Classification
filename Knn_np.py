@@ -1,17 +1,10 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[70]:
-
-
 import numpy as np
 from numpy import linalg as LA
+
 import heapq
 from collections import defaultdict
 
-
-# In[87]:
-
+import unittest
 
 
 class knn():
@@ -76,24 +69,83 @@ class knn():
             heapq.heappushpop(k_closet, (-index_dis,index))
         
 
-def test_knn():
+
+class Test(unittest.TestCase):
     
-    point=np.array([1,1,1])
-    x_train=np.array([[1,2,3] for i in range(100000)]) 
-    y_train=np.array([i%3for i in range(100000)])
-    knn0=knn(x_train,y_train,3)
-    print(knn0.predict_proba_batch([point,point]))
-test_knn()
+    def generate_point(self):
+        point=np.array([1,1,1])
+        x_train=np.array([[1,2,3], [1,1,1],[1,1,2]]) 
+        y_train=np.array([0,1,1])
+        return point,x_train,y_train
     
+    def generate_random_noraml_point(self,count,pointCount):
+        point=1+np.random.randn(pointCount,2)
+        x_train=1+np.random.randn(count, 2)
+        y_train=[1]*count
+        x_train=np.concatenate((x_train,5+np.random.randn(count, 2)))
+        y_train=np.append(y_train,[2]*count)
+        return point,x_train,y_train 
+    
+    def test_simple_predict_k_1(self):
+        point,x_train,y_train=self.generate_point()
+        knn_model=knn(x_train,y_train,1)
+        assert knn_model.predict(point)==1
+        
+    def test_simple_predict_k_3(self):
+        point,x_train,y_train=self.generate_point()
+        knn_model=knn(x_train,y_train,3)
+        assert knn_model.predict(point)==1
+        
+    def test_knn_efficiency(self):
+        point,x_train,y_train=self.generate_random_noraml_point(300000,1)
+        knn_model=knn(x_train,y_train,15)
+        assert knn_model.predict(point[0])==1
+    
+    def test_rand_normal_accuracy(self):
+        point,x_train,y_train=self.generate_random_noraml_point(500,1)
+        knn_model=knn(x_train,y_train,15)
+        assert knn_model.predict(point[0])==1
+        
+    def test_rand_normal_accuracy_batch(self):
+        points,x_train,y_train=self.generate_random_noraml_point(500,100)
+        knn_model=knn(x_train,y_train,150)
+        result=0
+        for r in knn_model.predict_batch(points):
+            if r :
+                result+=1
+        assert result>95
+        
+    def test_knn_efficiency_batch(self):
+        points,x_train,y_train=self.generate_random_noraml_point(10000,100)
+        knn_model=knn(x_train,y_train,150)
+        result=0
+        for r in knn_model.predict_batch(points):
+            if r :
+                result+=1
+        assert result>95
+        
+    def test_rand_normal_accuracy_proba(self):
+        point,x_train,y_train=self.generate_random_noraml_point(500,1)
+        knn_model=knn(x_train,y_train,15)
+        assert knn_model.predict_proba(point[0])[1]>=14/15
+        
+    def test_rand_normal_efficiency_proba(self):
+        point,x_train,y_train=self.generate_random_noraml_point(300000,1)
+        knn_model=knn(x_train,y_train,15)
+        assert knn_model.predict_proba(point[0])[1]>=14/15
 
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
+    def test_rand_normal_accuracy_predict_proba_batch(self):
+        points,x_train,y_train=self.generate_random_noraml_point(1000,100)
+        knn_model=knn(x_train,y_train,15)
+        result=0
+        for r in knn_model.predict_proba_batch(points):
+            if r[1]>14/15 :
+                result+=1
+        assert result>95
+        
+        
+if __name__== '__main__':
+    unittest.main(argv=['first-arg-is-ignored'], exit=False)
 
 
 
